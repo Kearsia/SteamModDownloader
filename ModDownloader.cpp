@@ -6,8 +6,6 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
-#include <iostream>
-#include <map>
 #include <regex>
 #include <sstream>
 #include <stdexcept>
@@ -89,7 +87,7 @@ class Logger {
 // ============================================================
 
 std::string extractWorkshopID(const std::string& input) {
-  std::string value = input;
+  const std::string& value = input;
 
   std::regex idPattern(R"(id=(\d+))");
 
@@ -118,6 +116,7 @@ std::vector<std::string> readModList(const fs::path& listFile, Logger& logger) {
   std::ifstream file(listFile);
 
   if (!file) {
+    logger.write("list.txt not found.");
     throw std::runtime_error("list.txt not found.");
   }
 
@@ -177,7 +176,7 @@ std::string httpGet(const std::wstring& host, const std::wstring& path,
                     Logger& logger) {
   HINTERNET session =
       WinHttpOpen(L"ModDownloader/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
-                  WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+                  nullptr, nullptr, 0);
 
   if (!session) {
     logger.write("ERROR: WinHTTP session creation failed.");
@@ -197,8 +196,8 @@ std::string httpGet(const std::wstring& host, const std::wstring& path,
   }
 
   HINTERNET request = WinHttpOpenRequest(
-      connection, L"GET", path.c_str(), nullptr, WINHTTP_NO_REFERER,
-      WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
+      connection, L"GET", path.c_str(), nullptr, nullptr,
+      nullptr, WINHTTP_FLAG_SECURE);
 
   if (!request) {
     WinHttpCloseHandle(connection);
@@ -209,8 +208,8 @@ std::string httpGet(const std::wstring& host, const std::wstring& path,
     return "";
   }
 
-  BOOL result = WinHttpSendRequest(request, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-                                   WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
+  BOOL result = WinHttpSendRequest(request, nullptr, 0,
+                                   nullptr, 0, 0, 0);
 
   if (!result || !WinHttpReceiveResponse(request, nullptr)) {
     logger.write("ERROR: Steam Workshop request failed.");
@@ -249,7 +248,7 @@ std::string httpGet(const std::wstring& host, const std::wstring& path,
 std::string detectAppID(const std::string& workshopID, Logger& logger) {
   HINTERNET session =
       WinHttpOpen(L"ModDownloader/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
-                  WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+                  nullptr, nullptr, 0);
 
   if (!session) {
     logger.write("ERROR: Cannot create WinHTTP session.");
@@ -270,7 +269,7 @@ std::string detectAppID(const std::string& workshopID, Logger& logger) {
 
   HINTERNET request = WinHttpOpenRequest(
       connection, L"POST", L"/ISteamRemoteStorage/GetPublishedFileDetails/v1/",
-      nullptr, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES,
+      nullptr, nullptr, nullptr,
       WINHTTP_FLAG_SECURE);
 
   if (!request) {
@@ -287,7 +286,7 @@ std::string detectAppID(const std::string& workshopID, Logger& logger) {
   std::wstring headers = L"Content-Type: application/x-www-form-urlencoded\r\n";
 
   BOOL sent =
-      WinHttpSendRequest(request, headers.c_str(), -1, (LPVOID)postData.c_str(),
+    WinHttpSendRequest(request,headers.c_str(),-1, static_cast<LPVOID>(const_cast<char*>(postData.c_str())),
                          static_cast<DWORD>(postData.size()),
                          static_cast<DWORD>(postData.size()), 0);
 
@@ -373,12 +372,6 @@ std::string detectAppID(const std::string& workshopID, Logger& logger) {
 
     return appID;
   }
-
-  /*
-      Debug:
-      zapisujemy fragment odpowiedzi,
-      jeżeli Steam zwrócił coś innego.
-  */
 
   logger.write("Unable to extract AppID from Steam response for " + workshopID);
 
@@ -494,7 +487,7 @@ int main() {
     return EXIT_SUCCESS;
   }
 
-  catch (const std::exception& e) {
+  catch (const std::exception& ) {
     return EXIT_FAILURE;
   }
 }
