@@ -298,7 +298,7 @@ Users are responsible for complying with applicable laws, the terms applicable t
 
 SteamModDownloader is released under the MIT License.
 
-Copyright © 2026 Kersia.
+Copyright © 2026 Kearsia.
 
 ## Status
 
