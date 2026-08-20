@@ -14,46 +14,30 @@
 
 namespace fs = std::filesystem;
 
-// ============================================================
-// Application paths
-// ============================================================
-
 fs::path getApplicationDirectory() {
-  wchar_t buffer[MAX_PATH];
-
-  DWORD length = GetModuleFileNameW(nullptr, buffer, MAX_PATH);
-
-  if (length == 0) {
+  wchar_t buf[MAX_PATH];
+  DWORD len = GetModuleFileNameW(nullptr, buf, MAX_PATH);
+  if (len == 0) {
     throw std::runtime_error("Unable to determine application path.");
   }
-
-  return fs::path(buffer).parent_path();
+  return fs::path(buf).parent_path();
 }
 
-// ============================================================
-// Logger
-// ============================================================
-
 class Logger {
- private:
   std::ofstream file;
 
- public:
+  public:
   Logger(const fs::path& directory) {
     fs::create_directories(directory);
 
     auto now = std::chrono::system_clock::now();
-
     auto time = std::chrono::system_clock::to_time_t(now);
 
     std::tm local{};
-
     localtime_s(&local, &time);
 
     std::stringstream name;
-
-    name << "ModDownloader_" << std::put_time(&local, "%Y-%m-%d_%H-%M-%S")
-         << ".log";
+    name << "ModDownloader_" << std::put_time(&local, "%Y-%m-%d_%H-%M-%S") << ".log";
 
     file.open(directory / name.str());
 
@@ -68,23 +52,16 @@ class Logger {
     if (!file) return;
 
     auto now = std::chrono::system_clock::now();
-
     auto time = std::chrono::system_clock::to_time_t(now);
 
     std::tm local{};
-
     localtime_s(&local, &time);
 
-    file << "[" << std::put_time(&local, "%Y-%m-%d %H:%M:%S") << "] " << message
-         << "\n";
+    file << "[" << std::put_time(&local, "%Y-%m-%d %H:%M:%S") << "] " << message<< "\n";
 
     file.flush();
   }
 };
-
-// ============================================================
-// Workshop ID parser
-// ============================================================
 
 std::string extractWorkshopID(const std::string& input) {
   const std::string& value = input;
@@ -97,7 +74,7 @@ std::string extractWorkshopID(const std::string& input) {
     return match[1];
   }
 
-  std::regex numberPattern(R"((\d+)$)");
+  std::regex numberPattern(R"((\d+)$)"); //regex
 
   if (std::regex_search(value, match, numberPattern)) {
     return match[1];
@@ -105,10 +82,6 @@ std::string extractWorkshopID(const std::string& input) {
 
   return "";
 }
-
-// ============================================================
-// List reader
-// ============================================================
 
 std::vector<std::string> readModList(const fs::path& listFile, Logger& logger) {
   std::vector<std::string> result;
@@ -137,12 +110,7 @@ std::vector<std::string> readModList(const fs::path& listFile, Logger& logger) {
   return result;
 }
 
-// ============================================================
-// Archive list
-// ============================================================
-
-void archiveList(const fs::path& listFile, const fs::path& archiveDirectory,
-                 Logger& logger) {
+void archiveList(const fs::path& listFile, const fs::path& archiveDirectory, Logger& logger) {
   if (!fs::exists(listFile)) {
     return;
   }
@@ -150,30 +118,22 @@ void archiveList(const fs::path& listFile, const fs::path& archiveDirectory,
   fs::create_directories(archiveDirectory);
 
   auto now = std::chrono::system_clock::now();
-
   auto time = std::chrono::system_clock::to_time_t(now);
 
   std::tm local{};
-
   localtime_s(&local, &time);
 
   std::stringstream name;
-
   name << "list_" << std::put_time(&local, "%Y-%m-%d_%H-%M-%S") << ".txt";
 
   fs::path destination = archiveDirectory / name.str();
-
   fs::rename(listFile, destination);
 
   logger.write("Archived list file: " + destination.string());
 }
 
-// ============================================================
-// Steam Workshop HTTP client
-// ============================================================
-
-std::string httpGet(const std::wstring& host, const std::wstring& path,
-                    Logger& logger) {
+// Helper function for http connection
+std::string httpGet(const std::wstring& host, const std::wstring& path, Logger& logger) {
   HINTERNET session =
       WinHttpOpen(L"ModDownloader/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
                   nullptr, nullptr, 0);
@@ -241,23 +201,19 @@ std::string httpGet(const std::wstring& host, const std::wstring& path,
 
   return response;
 }
-// ============================================================
-// Detect Steam application ID
-// ============================================================
 
+// Steam application finder
+// This is for finding the steam ID of the application
+// It's necessary for Steamcmd to properly download item
 std::string detectAppID(const std::string& workshopID, Logger& logger) {
-  HINTERNET session =
-      WinHttpOpen(L"ModDownloader/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
-                  nullptr, nullptr, 0);
+  HINTERNET session = WinHttpOpen(L"ModDownloader/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, nullptr, nullptr, 0);
 
   if (!session) {
     logger.write("ERROR: Cannot create WinHTTP session.");
-
     return "";
   }
 
-  HINTERNET connection = WinHttpConnect(session, L"api.steampowered.com",
-                                        INTERNET_DEFAULT_HTTPS_PORT, 0);
+  HINTERNET connection = WinHttpConnect(session, L"api.steampowered.com", INTERNET_DEFAULT_HTTPS_PORT, 0);
 
   if (!connection) {
     logger.write("ERROR: Cannot connect to Steam API.");
@@ -285,8 +241,7 @@ std::string detectAppID(const std::string& workshopID, Logger& logger) {
 
   std::wstring headers = L"Content-Type: application/x-www-form-urlencoded\r\n";
 
-  BOOL sent =
-    WinHttpSendRequest(request,headers.c_str(),-1, static_cast<LPVOID>(const_cast<char*>(postData.c_str())),
+  BOOL sent = WinHttpSendRequest(request,headers.c_str(),-1, static_cast<LPVOID>(const_cast<char*>(postData.c_str())),
                          static_cast<DWORD>(postData.size()),
                          static_cast<DWORD>(postData.size()), 0);
 
@@ -301,7 +256,6 @@ std::string detectAppID(const std::string& workshopID, Logger& logger) {
   }
 
   std::string response;
-
   DWORD available = 0;
 
   do {
@@ -350,14 +304,12 @@ std::string detectAppID(const std::string& workshopID, Logger& logger) {
   logger.write("Steam API response received for " + workshopID);
 
   std::regex consumerRegex(R"("consumer_app_id"\s*:\s*(\d+))");
-
   std::smatch match;
 
   if (std::regex_search(response, match, consumerRegex)) {
     std::string appID = match[1];
 
-    logger.write("Detected AppID " + appID + " for workshop item " +
-                 workshopID);
+    logger.write("Detected AppID " + appID + " for workshop item " + workshopID);
 
     return appID;
   }
@@ -367,25 +319,24 @@ std::string detectAppID(const std::string& workshopID, Logger& logger) {
   if (std::regex_search(response, match, creatorRegex)) {
     std::string appID = match[1];
 
-    logger.write("Detected AppID using creator_app_id: " + appID +
-                 " for workshop item " + workshopID);
+    logger.write("Detected AppID using creator_app_id: " + appID + " for workshop item " + workshopID);
 
     return appID;
   }
 
   logger.write("Unable to extract AppID from Steam response for " + workshopID);
 
-  logger.write("Response preview: " +
-               response.substr(0, std::min<size_t>(response.size(), 500)));
+  logger.write("Response preview: " + response.substr(0, std::min<size_t>(response.size(), 500)));
 
   return "";
 }
+
+//Structure for keeping the item info
 struct WorkshopItem {
   std::string workshopID;
   std::string appID;
 };
-bool downloadModsWithSteamCMD(const std::vector<WorkshopItem>& items,
-                              const fs::path& appDirectory, Logger& logger) {
+bool downloadModsWithSteamCMD(const std::vector<WorkshopItem>& items,const fs::path& appDirectory, Logger& logger) {
   fs::path steamcmd = appDirectory / "Steamcmd" / "steamcmd.exe";
 
   if (!fs::exists(steamcmd)) {
@@ -394,13 +345,15 @@ bool downloadModsWithSteamCMD(const std::vector<WorkshopItem>& items,
     return false;
   }
 
+  // Command construction
+  // Login anonymously
+  // Then send all commends to download items from workshop
+  // Finally quits the SteamCmd terminal
   std::stringstream command;
 
   command << "\"" << steamcmd.string() << "\" " << "+login anonymous ";
-
   for (const auto& item : items) {
-    command << "+workshop_download_item " << item.appID << " "
-            << item.workshopID << " ";
+    command << "+workshop_download_item " << item.appID << " " << item.workshopID << " ";
 
     logger.write(
         "Added download task: "
@@ -411,39 +364,30 @@ bool downloadModsWithSteamCMD(const std::vector<WorkshopItem>& items,
   command << "+quit";
 
   logger.write("Starting SteamCMD download.");
-
   logger.write("SteamCMD command: " + command.str());
 
   int result = std::system(command.str().c_str());
 
   if (result != 0) {
-    logger.write("ERROR: SteamCMD failed. Exit code: " +
-                 std::to_string(result));
+    logger.write("ERROR: SteamCMD failed. Exit code: " + std::to_string(result));
 
     return false;
   }
 
   logger.write("SteamCMD completed successfully.");
-
   return true;
 }
 
 int main() {
   try {
-    fs::path appDirectory = getApplicationDirectory();
-
-    fs::path logDirectory = appDirectory / "logs";
-
-    Logger logger(logDirectory);
-
+    fs::path appDir = getApplicationDirectory();
+    fs::path logDir = appDir / "logs";
+    Logger logger(logDir);
     logger.write("ModDownloader started.");
-
-    fs::path listFile = appDirectory / "list.txt";
-
-    fs::path archiveDirectory = appDirectory / "listArchive";
+    fs::path listFile = appDir / "list.txt";
+    fs::path archiveDirectory = appDir / "listArchive";
 
     auto mods = readModList(listFile, logger);
-
     std::vector<WorkshopItem> items;
 
     for (const auto& id : mods) {
@@ -456,8 +400,7 @@ int main() {
       }
     }
 
-    logger.write("Resolved " + std::to_string(items.size()) +
-                 " workshop items.");
+    logger.write("Resolved " + std::to_string(items.size()) + " workshop items.");
 
     if (mods.empty()) {
       logger.write("No workshop items found.");
@@ -467,8 +410,7 @@ int main() {
 
     logger.write("Mod detection phase completed.");
 
-    bool downloadSuccess =
-        downloadModsWithSteamCMD(items, appDirectory, logger);
+    bool downloadSuccess = downloadModsWithSteamCMD(items, appDir, logger);
 
     if (!downloadSuccess) {
       logger.write("Download failed. Application stopped.");
@@ -477,11 +419,8 @@ int main() {
     }
 
     logger.write("All mods downloaded successfully.");
-
     archiveList(listFile, archiveDirectory, logger);
-
     logger.write("Source list archived.");
-
     logger.write("Downloader finished successfully.");
 
     return EXIT_SUCCESS;
