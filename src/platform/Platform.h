@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../core/Logger.h"
+#include "Logger.h"
 
 #include <filesystem>
 #include <string>
@@ -24,7 +24,7 @@ std::string httpPost(
     Logger& logger
 );
 
-bool downloadModsWithSteamCMD(
+bool downloadItemWithSteamCMD(
     const std::vector<std::pair<std::string, std::string>>& items,
     const fs::path& appDirectory,
     Logger& logger

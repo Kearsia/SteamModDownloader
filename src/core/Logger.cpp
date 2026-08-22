@@ -3,7 +3,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "../platform/Platform.h"
+#include "Platform.h"
 #include "Logger.h"
 
 Logger::Logger(const fs::path& logDirectory) {
@@ -15,7 +15,7 @@ Logger::Logger(const fs::path& logDirectory) {
     std::tm localTime = getLocalTime(time);
     std::stringstream filename;
 
-    filename << "ModDownloader_" << std::put_time(&localTime, "%Y-%m-%d_%H-%M-%S") << ".log";
+    filename << "[SWD]" << std::put_time(&localTime, "%Y-%m-%d_%H-%M-%S") << ".log";
     file.open(logDirectory / filename.str(), std::ios::out);
 
     if (!file) {

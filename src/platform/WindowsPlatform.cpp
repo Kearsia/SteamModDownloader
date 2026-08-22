@@ -36,7 +36,7 @@ std::tm getLocalTime(std::time_t time) {
 }
 
 static std::string httpRequest(const std::wstring& host, const std::wstring& path, const std::string& method, const std::string& postData, Logger& logger) {
-  HINTERNET session = WinHttpOpen(L"ModDownloader/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, nullptr, nullptr, 0);
+  HINTERNET session = WinHttpOpen(L"SteamWorkshopDownloader/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, nullptr, nullptr, 0);
 
   if (!session) {
     logger.write("ERROR: WinHTTP session creation failed.");
@@ -160,7 +160,7 @@ std::string httpPost(const std::string& url, const std::string& postData, Logger
   }
 }
 
-bool downloadModsWithSteamCMD(const std::vector<std::pair<std::string, std::string>>& items, const fs::path& appDirectory, Logger& logger) {
+bool downloadItemWithSteamCMD(const std::vector<std::pair<std::string, std::string>>& items, const fs::path& appDirectory, Logger& logger) {
   fs::path steamcmd = appDirectory / "Steamcmd" / "steamcmd.exe";
 
   if (!fs::exists(steamcmd)) {

@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "../platform/Platform.h"
+#include "Platform.h"
 
 namespace fs = std::filesystem;
 
@@ -30,7 +30,7 @@ std::string extractWorkshopID(const std::string& input) {
   return "";
 }
 
-std::vector<std::string> readModList(const fs::path& listFile, Logger& logger) {
+std::vector<std::string> readWorkshopList(const fs::path& listFile, Logger& logger) {
   std::vector<std::string> result;
   std::ifstream file(listFile);
 
@@ -55,23 +55,23 @@ std::vector<std::string> readModList(const fs::path& listFile, Logger& logger) {
 
 int main() {
   try {
-    fs::path appDirectory = getApplicationDirectory();  // where APP is stored
+    fs::path appDirectory = getApplicationDirectory();  // where the executable is located
     fs::path logDirectory = appDirectory / "logs";   // logs
     fs::path listFile = appDirectory / "list.txt";
     fs::path archiveDirectory = appDirectory / "listArchive";
 
     Logger logger(logDirectory);
-    logger.write("ModDownloader started.");
-    auto mods = readModList(listFile, logger);
+    logger.write("SteamWorkshopDownloader started.");
+    auto workshopItems = readWorkshopList(listFile, logger);
 
-    if (mods.empty()) {
+    if (workshopItems.empty()) {
       logger.write("No workshop items found.");
       return EXIT_FAILURE;
     }
 
     std::vector<std::pair<std::string, std::string> > items;
 
-    for (const auto& workshopID : mods) {
+    for (const auto& workshopID : workshopItems) {
       std::string appID = detectAppID(workshopID, logger);
 
       if (!appID.empty()) {
@@ -88,15 +88,15 @@ int main() {
       return EXIT_FAILURE;
     }
 
-    logger.write("Mod detection phase completed.");
-    bool downloadSuccess = downloadModsWithSteamCMD(items, appDirectory, logger);
+    logger.write("Workshop item detection phase completed.");
+    bool downloadSuccess = downloadItemWithSteamCMD(items, appDirectory, logger);
 
     if (!downloadSuccess) {
       logger.write("Download failed. Application stopped.");
       return EXIT_FAILURE;
     }
 
-    logger.write("All mods downloaded successfully.");
+    logger.write("All Workshop items downloaded successfully.");
     fs::create_directories(archiveDirectory);
 
     auto now = std::chrono::system_clock::now();

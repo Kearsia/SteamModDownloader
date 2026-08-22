@@ -1,6 +1,6 @@
-# SteamModDownloader
+# SteamWorkshopDownloader
 
-SteamModDownloader is a small cross-platform C++17 utility for downloading Steam Workshop items using SteamCMD.
+SteamWorkshopDownloader is a small cross-platform C++17 utility for downloading Steam Workshop items using SteamCMD.
 
 The application accepts Steam Workshop URLs or Workshop item IDs, automatically determines the associated Steam App ID using the Steam Web API, and passes the download commands to SteamCMD.
 
@@ -9,7 +9,7 @@ The application currently supports:
 - Windows
 - Linux
 
-> **Current version: 0.2.0**
+> **Current version: 0.2.1**
 
 ## Features
 
@@ -49,7 +49,7 @@ The application expects SteamCMD at:
 
     Steamcmd/steamcmd.exe
 
-relative to `ModDownloader.exe`.
+relative to `SWDownloader.exe`.
 
 ### Linux
 
@@ -96,7 +96,7 @@ The application expects:
 
 The Linux implementation starts SteamCMD through Bash.
 
-Make sure the SteamCMD installation is complete before running SteamModDownloader.
+Make sure the SteamCMD installation is complete before running SteamWorkshopDownloader.
 
 ## Download
 
@@ -121,8 +121,8 @@ Download the latest Windows release ZIP and extract it to a directory of your ch
 
 A typical installation looks like:
 
-    SteamModDownloader/
-    ├── ModDownloader.exe
+    SteamWorkshopDownloader/
+    ├── SWDownloader.exe
     ├── libgcc_s_seh-1.dll
     ├── libstdc++-6.dll
     ├── libwinpthread-1.dll
@@ -141,7 +141,7 @@ Create a file named:
 
     list.txt
 
-next to `ModDownloader.exe`.
+next to `SWDownloader.exe`.
 
 Add one Workshop URL or Workshop item ID per line.
 
@@ -157,7 +157,7 @@ You can also use the included `list.example.txt` as a starting point.
 
 Run:
 
-    ModDownloader.exe
+    SWDownloader.exe
 
 The application automatically creates the `logs` and `listArchive` directories when required.
 
@@ -165,8 +165,8 @@ The application automatically creates the `logs` and `listArchive` directories w
 
 After building the Linux version, the directory should look similar to:
 
-    SteamModDownloader/
-    ├── ModDownloader
+    SteamWorkshopDownloader/
+    ├── SWDownloader
     ├── Steamcmd/
     │   └── steamcmd.sh
     └── list.txt
@@ -183,15 +183,15 @@ when required.
 
 Run the application with:
 
-    ./ModDownloader
+    ./SWDownloader
 
 If the executable does not have execute permission:
 
-    chmod +x ModDownloader
+    chmod +x SWDownloader
 
 Then run:
 
-    ./ModDownloader
+    ./SWDownloader
 
 ## Input format
 
@@ -209,7 +209,7 @@ Lines that do not contain a recognizable Workshop ID are ignored.
 
 ## How it works
 
-When started, SteamModDownloader:
+When started, SteamWorkshopDownloader:
 
 1. Determines its application directory.
 2. Initializes the logging system.
@@ -236,7 +236,7 @@ The source tree is:
     │   └── Logger.h
     │
     ├── main/
-    │   └── ModDownloader.cpp
+    │   └── main.cpp
     │
     └── platform/
         ├── Platform.h
@@ -257,7 +257,7 @@ Currently this includes the logging system:
 
 The main application logic is located in:
 
-    src/main/ModDownloader.cpp
+    src/main/main.cpp
 
 This code does not contain Windows-specific or Linux-specific networking implementation.
 
@@ -283,7 +283,7 @@ CMake selects the appropriate implementation automatically.
 
 ## HTTPS implementation
 
-SteamModDownloader communicates with the Steam Web API over HTTPS.
+SteamWorkshopDownloader communicates with the Steam Web API over HTTPS.
 
 The implementation differs depending on the operating system.
 
@@ -343,16 +343,16 @@ Build the application:
 
 The resulting executable will normally be:
 
-    build_linux/ModDownloader
+    build_linux/SWDownloader
 
 Run it with:
 
-    ./build_linux/ModDownloader
+    ./build_linux/SWDownloader
 
 Alternatively:
 
     cd build_linux
-    ./ModDownloader
+    ./SWDownloader
 
 ### Building on Windows
 
@@ -376,12 +376,12 @@ For a typical Visual Studio build:
 
     build/
     └── Release/
-        └── ModDownloader.exe
+        └── SWDownloader.exe
 
 For a typical MinGW build:
 
     build/
-    └── ModDownloader.exe
+    └── SWDownloader.exe
 
 ## Building with CLion
 
@@ -442,9 +442,9 @@ A separate log file is created for each execution.
 Example:
 
     logs/
-    ├── ModDownloader_2026-08-20_11-30-00.log
-    ├── ModDownloader_2026-08-20_12-15-42.log
-    └── ModDownloader_2026-08-20_13-05-21.log
+    ├── SWDownloader_2026-08-20_11-30-00.log
+    ├── SWDownloader_2026-08-20_12-15-42.log
+    └── SWDownloader_2026-08-20_13-05-21.log
 
 Logs may contain:
 
@@ -518,7 +518,7 @@ CMake detects the installed OpenSSL automatically.
 
 ### Steam Web API
 
-SteamModDownloader uses the Steam Web API endpoint:
+SteamWorkshopDownloader uses the Steam Web API endpoint:
 
     ISteamRemoteStorage/GetPublishedFileDetails
 
@@ -544,7 +544,7 @@ The release package contains the required MinGW runtime DLLs:
 
 These files should remain in the same directory as:
 
-    ModDownloader.exe
+    SWDownloader.exe
 
 They are included in the Windows release package so that normal users do not need to install MinGW-w64 themselves.
 
@@ -566,7 +566,7 @@ The development package provides the headers and libraries required by CMake and
 
 The source repository should have a structure similar to:
 
-    SteamModDownloader/
+    SteamWorkshopDownloader/
     ├── .gitignore
     ├── CMakeLists.txt
     ├── LICENSE
@@ -579,7 +579,7 @@ The source repository should have a structure similar to:
     │   │   └── Logger.h
     │   │
     │   ├── main/
-    │   │   └── ModDownloader.cpp
+    │   │   └── main.cpp
     │   │
     │   └── platform/
     │       ├── Platform.h
@@ -602,7 +602,7 @@ SteamCMD is also an external dependency and should normally not be committed to 
 
 ## Limitations
 
-Version `0.2.0` currently has the following limitations:
+Version `0.2.1` currently has the following limitations:
 
 - SteamCMD must be installed separately
 - SteamCMD is currently used with anonymous login
@@ -680,7 +680,7 @@ Please keep changes focused and provide a clear description of the changes.
 
 ## Disclaimer
 
-SteamModDownloader is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Valve Corporation.
+SteamWorkshopDownloader is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Valve Corporation.
 
 Steam, SteamCMD, Steam Workshop, and related names and trademarks are property of their respective owners.
 
@@ -688,15 +688,15 @@ Users are responsible for complying with applicable laws, the terms applicable t
 
 ## License
 
-SteamModDownloader is released under the MIT License.
+SteamWorkshopDownloader is released under the MIT License.
 
 Copyright © 2026 Kearsia.
 
 ## Status
 
-SteamModDownloader is currently released as version:
+SteamWorkshopDownloader is currently released as version:
 
-    0.2.0
+    0.2.1
 
 The project currently supports:
 

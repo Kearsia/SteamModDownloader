@@ -147,7 +147,7 @@ static std::string httpsRequest(const std::string& host, const std::string& path
   std::stringstream request;
   request << method << " " << path << " HTTP/1.1\r\n";
   request << "Host: " << host << "\r\n";
-  request << "User-Agent: ModDownloader/1.0\r\n";
+  request << "User-Agent: SteamWorkshopDownloader/1.0\r\n";
   request << "Connection: close\r\n";
 
   if (method == "POST") {
@@ -254,7 +254,7 @@ std::string httpPost(const std::string& url, const std::string& postData, Logger
   }
 }
 
-bool downloadModsWithSteamCMD(const std::vector<std::pair<std::string, std::string>>& items, const fs::path& appDirectory, Logger& logger) {
+bool downloadItemWithSteamCMD(const std::vector<std::pair<std::string, std::string>>& items, const fs::path& appDirectory, Logger& logger) {
   fs::path steamcmd = appDirectory / "Steamcmd" / "steamcmd.sh";
 
   if (!fs::exists(steamcmd)) {

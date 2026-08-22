@@ -8,6 +8,7 @@ cmake-build-*/
 out/
 bin/
 obj/
+build_linux/
 
 # ============================================================
 # CMake generated files
@@ -113,5 +114,6 @@ Desktop.ini
 # Others
 # ============================================================
 
+Releases/
 *.zip
 *.rar
