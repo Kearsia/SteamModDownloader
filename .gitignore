@@ -9,6 +9,7 @@ out/
 bin/
 obj/
 build_linux/
+linux_build/
 
 # ============================================================
 # CMake generated files
