@@ -57,12 +57,12 @@ int main() {
   try {
     fs::path appDirectory = getApplicationDirectory();  // where the executable is located
     fs::path logDirectory = appDirectory / "logs";   // logs
-    fs::path listFile = appDirectory / "list.txt";
+    fs::path listFile = appDirectory / "list.txt";   // seek for list file in executable is located
     fs::path archiveDirectory = appDirectory / "listArchive";
 
     Logger logger(logDirectory);
     logger.write("SteamWorkshopDownloader started.");
-    auto workshopItems = readWorkshopList(listFile, logger);
+    auto workshopItems = readWorkshopList(listFile, logger);  // get all ids from list file
 
     if (workshopItems.empty()) {
       logger.write("No workshop items found.");
@@ -113,7 +113,7 @@ int main() {
     fs::rename(listFile, destination, error);
 
     if (error) {
-      logger.write("ERROR: Unable to archive list file: " + error.message());
+      logger.write("Unable to archive list file: " + error.message(), level::ERR);
     } else {
       logger.write("Archived list file: " + destination.string());
     }

@@ -39,14 +39,14 @@ static std::string httpRequest(const std::wstring& host, const std::wstring& pat
   HINTERNET session = WinHttpOpen(L"SteamWorkshopDownloader/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, nullptr, nullptr, 0);
 
   if (!session) {
-    logger.write("ERROR: WinHTTP session creation failed.");
+    logger.write("WinHTTP session creation failed.", level::ERR);
     return "";
   }
 
   HINTERNET connection = WinHttpConnect(session, host.c_str(), INTERNET_DEFAULT_HTTPS_PORT, 0);
 
   if (!connection) {
-    logger.write("ERROR: WinHTTP connection failed.");
+    logger.write(" WinHTTP connection failed.", level::ERR);
     WinHttpCloseHandle(session);
 
     return "";
@@ -56,7 +56,7 @@ static std::string httpRequest(const std::wstring& host, const std::wstring& pat
       WinHttpOpenRequest(connection, method == "POST" ? L"POST" : L"GET", path.c_str(), nullptr, nullptr, nullptr, WINHTTP_FLAG_SECURE);
 
   if (!request) {
-    logger.write("ERROR: WinHTTP request creation failed.");
+    logger.write("WinHTTP request creation failed.", level::ERR);
 
     WinHttpCloseHandle(connection);
     WinHttpCloseHandle(session);
@@ -80,7 +80,7 @@ static std::string httpRequest(const std::wstring& host, const std::wstring& pat
   }
 
   if (!result || !WinHttpReceiveResponse(request, nullptr)) {
-    logger.write("ERROR: WinHTTP request failed.");
+    logger.write("WinHTTP request failed.", level::ERR);
 
     WinHttpCloseHandle(request);
     WinHttpCloseHandle(connection);
@@ -96,7 +96,7 @@ static std::string httpRequest(const std::wstring& host, const std::wstring& pat
     std::vector<char> buffer(available);
     DWORD downloaded = 0;
     if (!WinHttpReadData(request, buffer.data(), available, &downloaded)) {
-      logger.write("ERROR: WinHTTP read failed.");
+      logger.write("WinHTTP read failed.", level::ERR);
       break;
     }
     response.append(buffer.data(), downloaded);
@@ -144,7 +144,7 @@ std::string httpGet(const std::string& url, Logger& logger) {
     auto [host, path] = parseUrl(url);
     return httpRequest(host, path, "GET", "", logger);
   } catch (const std::exception& exception) {
-    logger.write(std::string("ERROR: ") + exception.what());
+    logger.write(exception.what(), level::ERR);
     return "";
   }
 }
@@ -155,7 +155,7 @@ std::string httpPost(const std::string& url, const std::string& postData, Logger
     auto [host, path] = parseUrl(url);
     return httpRequest(host, path, "POST", postData, logger);
   } catch (const std::exception& exception) {
-    logger.write(std::string("ERROR: ") + exception.what());
+    logger.write(exception.what(), level::ERR);
     return "";
   }
 }
@@ -164,7 +164,7 @@ bool downloadItemWithSteamCMD(const std::vector<std::pair<std::string, std::stri
   fs::path steamcmd = appDirectory / "Steamcmd" / "steamcmd.exe";
 
   if (!fs::exists(steamcmd)) {
-    logger.write("ERROR: SteamCMD executable not found: " + steamcmd.string());
+    logger.write("SteamCMD executable not found: " + steamcmd.string(), level::ERR);
     return false;
   }
 
@@ -189,7 +189,7 @@ bool downloadItemWithSteamCMD(const std::vector<std::pair<std::string, std::stri
   int result = std::system(command.str().c_str());
 
   if (result != 0) {
-    logger.write("ERROR: SteamCMD failed. Exit code: " + std::to_string(result));
+    logger.write("SteamCMD failed. Exit code: " + std::to_string(result), level::ERR);
     return false;
   }
   logger.write("SteamCMD completed successfully.");
@@ -204,7 +204,7 @@ std::string detectAppID(const std::string& workshopID, Logger& logger) {
   std::string response = httpPost(url, postData, logger);
 
   if (response.empty()) {
-    logger.write("ERROR: Empty Steam API response for " + workshopID);
+    logger.write("Empty Steam API response for " + workshopID, level::ERR);
     return "";
   }
 
@@ -227,7 +227,7 @@ std::string detectAppID(const std::string& workshopID, Logger& logger) {
     return appID;
   }
 
-  logger.write("Unable to extract AppID from Steam response for " + workshopID);
+  logger.write("Unable to extract AppID from Steam response for " + workshopID, level::WARN);
   logger.write("Response preview: " + response.substr(0, std::min<size_t>(response.size(), 500)));
   return "";
 }

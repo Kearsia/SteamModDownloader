@@ -1,4 +1,21 @@
 #ifdef __linux__
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
+#include "Logger.h"
 
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
@@ -97,7 +114,7 @@ static std::string httpsRequest(const std::string& host, const std::string& path
   SSL_CTX* context = SSL_CTX_new(TLS_client_method());
 
   if (!context) {
-    logger.write("ERROR: Unable to create OpenSSL context.");
+    logger.write("Unable to create OpenSSL context.", level::ERR);
 
     return "";
   }
@@ -106,7 +123,7 @@ static std::string httpsRequest(const std::string& host, const std::string& path
   BIO* bio = BIO_new_ssl_connect(context);
 
   if (!bio) {
-    logger.write("ERROR: Unable to create OpenSSL BIO.");
+    logger.write("Unable to create OpenSSL BIO.", level::ERR);
     SSL_CTX_free(context);
     return "";
   }
@@ -115,7 +132,7 @@ static std::string httpsRequest(const std::string& host, const std::string& path
   BIO_get_ssl(bio, &ssl);
 
   if (!ssl) {
-    logger.write("ERROR: Unable to initialize SSL.");
+    logger.write("Unable to initialize SSL.", level::ERR);
     BIO_free_all(bio);
     SSL_CTX_free(context);
 
@@ -127,7 +144,7 @@ static std::string httpsRequest(const std::string& host, const std::string& path
   BIO_set_conn_hostname(bio, (host + ":443").c_str());
 
   if (BIO_do_connect(bio) <= 0) {
-    logger.write("ERROR: Unable to connect to " + host);
+    logger.write("Unable to connect to " + host, level::ERR);
 
     BIO_free_all(bio);
     SSL_CTX_free(context);
@@ -136,7 +153,7 @@ static std::string httpsRequest(const std::string& host, const std::string& path
   }
 
   if (BIO_do_handshake(bio) <= 0) {
-    logger.write("ERROR: TLS handshake failed.");
+    logger.write("TLS handshake failed.", level::ERR);
     BIO_free_all(bio);
     SSL_CTX_free(context);
     return "";
@@ -166,7 +183,7 @@ static std::string httpsRequest(const std::string& host, const std::string& path
   // Send
   int written = BIO_write(bio, requestData.data(), static_cast<int>(requestData.size()));
   if (written <= 0) {
-    logger.write("ERROR: Failed to send HTTPS request.");
+    logger.write("Failed to send HTTPS request.", level::ERR);
     BIO_free_all(bio);
     SSL_CTX_free(context);
     return "";
@@ -194,7 +211,7 @@ static std::string httpsRequest(const std::string& host, const std::string& path
   // Split headers/body
   size_t headerEnd = response.find("\r\n\r\n");
   if (headerEnd == std::string::npos) {
-    logger.write("ERROR: Invalid HTTP response.");
+    logger.write("Invalid HTTP response.", level::ERR);
     return "";
   }
   std::string headers = response.substr(0, headerEnd);
@@ -209,11 +226,11 @@ static std::string httpsRequest(const std::string& host, const std::string& path
       try {
         int statusCode = std::stoi(status);
         if (statusCode < 200 || statusCode >= 300) {
-          logger.write("ERROR: HTTP status " + std::to_string(statusCode));
+          logger.write("HTTP status " + std::to_string(statusCode), level::ERR);
           return "";
         }
       } catch (...) {
-        logger.write("ERROR: Invalid HTTP status.");
+        logger.write("Invalid HTTP status.", level::ERR);
         return "";
       }
     }
@@ -237,7 +254,7 @@ std::string httpGet(const std::string& url, Logger& logger) {
     return httpsRequest(host, path, "GET", "", logger);
 
   } catch (const std::exception& exception) {
-    logger.write(std::string("ERROR: ") + exception.what());
+    logger.write(exception.what(), level::ERR);
     return "";
   }
 }
@@ -249,7 +266,7 @@ std::string httpPost(const std::string& url, const std::string& postData, Logger
     return httpsRequest(host, path, "POST", postData, logger);
 
   } catch (const std::exception& exception) {
-    logger.write(std::string("ERROR: ") + exception.what());
+    logger.write(exception.what(), level::ERR);
     return "";
   }
 }
@@ -258,7 +275,7 @@ bool downloadItemWithSteamCMD(const std::vector<std::pair<std::string, std::stri
   fs::path steamcmd = appDirectory / "Steamcmd" / "steamcmd.sh";
 
   if (!fs::exists(steamcmd)) {
-    logger.write("ERROR: SteamCMD executable not found: " + steamcmd.string());
+    logger.write("SteamCMD executable not found: " + steamcmd.string(), level::ERR);
     return false;
   }
 
@@ -292,7 +309,7 @@ std::string detectAppID(const std::string& workshopID, Logger& logger) {
 
   std::string response = httpPost(url, postData, logger);
   if (response.empty()) {
-    logger.write("ERROR: Empty Steam API response for " + workshopID);
+    logger.write("Empty Steam API response for " + workshopID, level::ERR);
 
     return "";
   }
@@ -314,7 +331,7 @@ std::string detectAppID(const std::string& workshopID, Logger& logger) {
 
     return appID;
   }
-  logger.write("Unable to extract AppID from Steam response for " + workshopID);
+  logger.write("Unable to extract AppID from Steam response for " + workshopID, level::WARN);
   logger.write("Response preview: " + response.substr(0, std::min<size_t>(response.size(), 500)));
 
   return "";

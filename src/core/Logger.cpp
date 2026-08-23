@@ -24,14 +24,24 @@ Logger::Logger(const fs::path& logDirectory) {
     write("Logger initialized.");
 }
 
-void Logger::write(const std::string& message) {
+void Logger::write(const std::string& message, level l) {
     if (!file) { return; }
 
     auto now = std::chrono::system_clock::now();
     auto time = std::chrono::system_clock::to_time_t(now);
 
     std::tm localTime = getLocalTime(time);
-    file << "[" << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S") << "] " << message << '\n';
+    file << "[" << printLevel(l) << "] : " << "[" << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S") << "] " << message << '\n';
 
     file.flush();
+}
+
+std::string Logger::printLevel(level l) {
+    switch (l) {
+        case level::INFO: return "INFO";
+        case level::WARN: return "WARN";
+        case level::ERR: return "ERROR";
+        case level::FATAL: return "FATAL";
+    }
+    return "";
 }
